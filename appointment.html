@@ -297,7 +297,7 @@
 
 
                   <!-- Hidden Project Name -->
-                  <input type="hidden" id="project-name" name="project-name" value="Emirates Towers Residences">
+                  <input type="hidden" id="project-name" name="project_name" value="VIP Majlis, Meraas and Nakheel Sales center">
 
                   <!-- Success & Fail Messages -->
                   <div id="success_message" style="display:none;">Thank you! Your submission has been received!</div>
@@ -320,98 +320,88 @@
       </div>  
     </div>
   </section>
-  <script>
+<script>
     document.addEventListener("DOMContentLoaded", function () {
       async function loadSlots() {
-        try {
-          const response = await fetch("https://stage.meraas.com/en/api/appointments/slots");
-          const data = await response.json();
-          console.log(data);
-          const dateOptions = document.getElementById("date-options");
-          const slotOptions = document.getElementById("slot-options");
-          const slotMessage = document.getElementById("slot-message");
-          const summaryDateTime = document.getElementById("summary-datetime");
+  try {
+    const projectName = encodeURIComponent(document.getElementById("project-name").value);
+    
+    const endPointUrl = "https://stage.meraas.com/en/api/appointments/slots?project="+projectName;
+    console.log(endPointUrl);
+    const response = await fetch(`https://stage.meraas.com/en/api/appointments/slots?project=${projectName}`);
+    const data = await response.json();
+    console.log(data);
 
-          dateOptions.innerHTML = "";
-          slotOptions.innerHTML = "";
-          slotMessage.style.display = "none";
+    const dateOptions = document.getElementById("date-options");
+    const slotOptions = document.getElementById("slot-options");
+    const slotMessage = document.getElementById("slot-message");
+    const summaryDateTime = document.getElementById("summary-datetime");
 
-          let dates = Object.keys(data);
-          let defaultDate = null;
+    dateOptions.innerHTML = "";
+    slotOptions.innerHTML = "";
+    slotMessage.style.display = "none";
 
-          // ✅ Pick first date that has slots
-          for (let d of dates) {
-            if (data[d].available.length > 0) {
-              defaultDate = d;
-              break;
-            }
-          }
-          // If no available slots at all → fallback to first date
-          if (!defaultDate) defaultDate = dates[0];
+    let dates = Object.keys(data.dates);
+    let defaultDate = dates.find(d => data.dates[d].available.length > 0) || dates[0];
 
-          // Render date radio buttons
-          dates.forEach((d, index) => {
-            let optionId = `date-${index}`;
-            dateOptions.insertAdjacentHTML("beforeend", `
-              <div class="option-item">
-                <input type="radio" id="${optionId}" name="date" value="${d}" ${d === defaultDate ? "checked" : ""}>
-                <label for="${optionId}">${d}</label>
-              </div>
-            `);
-          });
+    // Render date radio buttons
+    dates.forEach((d, index) => {
+      const optionId = `date-${index}`;
+      dateOptions.insertAdjacentHTML("beforeend", `
+        <div class="option-item">
+          <input type="radio" id="${optionId}" name="date" value="${d}" ${d === defaultDate ? "checked" : ""}>
+          <label for="${optionId}">${d}</label>
+        </div>
+      `);
+    });
 
-          // Render slots for default date
-          renderSlots(defaultDate);
+    renderSlots(defaultDate);
 
-          // Listen for date change
-          dateOptions.addEventListener("change", (e) => {
-            renderSlots(e.target.value);
-          });
+    dateOptions.addEventListener("change", e => renderSlots(e.target.value));
 
-          // Render slots for a date
-          function renderSlots(selectedDate) {
-            slotOptions.innerHTML = "";
-            let slots = data[selectedDate].available;
+    function renderSlots(selectedDate) {
+      slotOptions.innerHTML = "";
+        const available = data.dates[selectedDate].available;
 
-            if (slots.length === 0) {
-              slotMessage.style.display = "block";
-              summaryDateTime.textContent = `${selectedDate} - All slots booked`;
-              return;
-            }
-
-            slotMessage.style.display = "none";
-            slots.forEach((s, i) => {
-              let slotId = `slot-${i}`;
-              slotOptions.insertAdjacentHTML("beforeend", `
-                <div class="option-item">
-                  <input type="radio" id="${slotId}" name="slot" value="${s}" ${i === 0 ? "checked" : ""}>
-                  <label for="${slotId}">${s}</label>
-                </div>
-              `);
-            });
-
-            // ✅ Update summary with first available slot
-            updateSummary(selectedDate, slots[0]);
-
-            // Listen for slot change
-            slotOptions.querySelectorAll("input").forEach(input => {
-              input.addEventListener("change", (e) => {
-                updateSummary(selectedDate, e.target.value);
-              });
-            });
-          }
-
-          // Update Summary
-          function updateSummary(date, slot) {
-            summaryDateTime.textContent = `${date} - ${slot}`;
-          }
-
-        } catch (error) {
-          console.error("Error fetching slots:", error);
+        if (available.length === 0) {
+          slotMessage.style.display = "block";
+          summaryDateTime.textContent = `${selectedDate} - All slots booked`;
+          return;
         }
-      }
+
+        slotMessage.style.display = "none";
+
+        // Only render available slots
+        available.forEach((s, i) => {
+          const slotId = `slot-${i}`;
+          slotOptions.insertAdjacentHTML("beforeend", `
+            <div class="option-item">
+              <input type="radio" id="${slotId}" name="slot" value="${s}" ${i===0 ? "checked" : ""}>
+              <label for="${slotId}">${s}</label>
+            </div>
+          `);
+        });
+
+        // Update summary with first available slot
+        updateSummary(selectedDate, available[0]);
+
+        slotOptions.querySelectorAll("input").forEach(input => {
+          input.addEventListener("change", e => updateSummary(selectedDate, e.target.value));
+        });
+    }
+
+    function updateSummary(date, slot) {
+      summaryDateTime.textContent = `${date} - ${slot}`;
+    }
+
+  } catch (error) {
+    console.error("Error fetching slots:", error);
+  }
+}
+
 
       loadSlots();
+
       document.getElementById("register-form").addEventListener("submit", async function (e) {
         e.preventDefault();
         const form = e.target;
@@ -422,10 +412,9 @@
           phone: form.phone.value,
           date: form.querySelector("input[name='date']:checked")?.value,
           slot: form.querySelector("input[name='slot']:checked")?.value,
-          project: form["project-name"].value,
+          project_name: form["project-name"].value, // <- match DB column
         };
-
-        // console.log(JSON.stringify(formData));
+        console.log(formData);
 
         try {
           const response = await fetch("https://stage.meraas.com/en/api/appointments/book", {
@@ -434,11 +423,21 @@
             body: JSON.stringify(formData),
           });
 
-          const result = await response.json();
+          const text = await response.text();  // <-- get raw text
+          console.log("Raw response:", text);
+
+          let result;
+          try {
+            result = JSON.parse(text);  // try parse JSON
+          } catch (err) {
+            console.error("Failed to parse JSON:", err);
+            alert("Server did not return valid JSON. Check console.");
+            return;
+          }
 
           if (result.status === "success") {
             document.getElementById("success_message").style.display = "block";
-            form.reset();
+            loadSlots(); // reload slots after booking
           } else {
             alert(result.message || "Error submitting form");
           }
@@ -446,10 +445,9 @@
           console.error("Error submitting form:", err);
           alert("Something went wrong. Please try again later.");
         }
-      });
 
+      });
     });
-  
-</script>
+  </script>
 </body>
 </html>
