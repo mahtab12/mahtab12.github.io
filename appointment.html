@@ -20,6 +20,7 @@
 }
 
 .section_cta {
+  padding-top: 50px;
   background-color: #280000;
     opacity: 1;
     background-image: linear-gradient(#280000d6,#280000d6),url(https://cdn.prod.website-files.com/680a044466c287311a4266d1/680b5394f1004c07e0c9a171_Asset%2013%403x-80.avif);
@@ -49,7 +50,7 @@
     text-align: left;
     letter-spacing: 2px;
     -webkit-text-stroke-color: #041f1b;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
     font-size: 16px;
     font-weight: 300;
 }
@@ -188,7 +189,9 @@
         <div class="cta26_component">
           <div class="max-width-large align-center">
             
-            <h2 class="heading-style-h3">Register your interest</h2>
+            <h2 class="heading-style-h3">
+              Register your interest in <span id="project-title"></span>
+            </h2>
 
             <div class="form_block is-form">
               <div class="form-block-2 w-form">
@@ -225,63 +228,6 @@
                       <!-- Dates from API will appear here -->
                     </div>
                   </div>
-                  <!-- Date (radio styled like checkbox) -->
-                  <!-- <div class="field_div">
-                    <label class="field-label">Select Date*</label>
-                    <div class="options-group">
-                      <div class="option-item">
-                        <input type="radio" id="date18" name="date" value="18th Sept" required>
-                        <label for="date18">18th Sept</label>
-                      </div>
-                      <div class="option-item">
-                        <input type="radio" id="date19" name="date" value="19th Sept">
-                        <label for="date19">19th Sept</label>
-                      </div>
-                      <div class="option-item">
-                        <input type="radio" id="date20" name="date" value="20th Sept">
-                        <label for="date20">20th Sept</label>
-                      </div>
-                    </div>
-                  </div>
- -->
-                  <!-- Time Slot (radio styled like checkbox) -->
-                  <!-- <div class="field_div">
-                    <label class="field-label">Time Slot*</label>
-                    <div class="options-group">
-                      <div class="option-item">
-                        <input type="radio" id="time10" name="time" value="10:00 AM" required>
-                        <label for="time10">10:00 AM</label>
-                      </div>
-                      <div class="option-item">
-                        <input type="radio" id="time11" name="time" value="11:00 AM">
-                        <label for="time11">11:00 AM</label>
-                      </div>
-                      <div class="option-item">
-                        <input type="radio" id="time12" name="time" value="12:00 PM">
-                        <label for="time12">12:00 PM</label>
-                      </div>
-                      <div class="option-item">
-                        <input type="radio" id="time1" name="time" value="1:00 PM">
-                        <label for="time1">1:00 PM</label>
-                      </div>
-                      <div class="option-item">
-                        <input type="radio" id="time2" name="time" value="2:00 PM">
-                        <label for="time2">2:00 PM</label>
-                      </div>
-                      <div class="option-item">
-                        <input type="radio" id="time3" name="time" value="3:00 PM">
-                        <label for="time3">3:00 PM</label>
-                      </div>
-                      <div class="option-item">
-                        <input type="radio" id="time4" name="time" value="4:00 PM">
-                        <label for="time4">4:00 PM</label>
-                      </div>
-                      <div class="option-item">
-                        <input type="radio" id="time5" name="time" value="5:00 PM">
-                        <label for="time5">5:00 PM</label>
-                      </div>
-                    </div>
-                  </div> -->
 
                   <div class="field_div full-width">
                     <label class="field-label">Time Slot*</label>
@@ -328,7 +274,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header bg-success text-white">
-          <h5 class="modal-title">Booking Successful 🎉</h5>
+          <h5 class="modal-title">Booking Successful</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
@@ -344,139 +290,165 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      async function loadSlots() {
-      try {
-        const projectName = encodeURIComponent(document.getElementById("project-name").value);
-        
-        const endPointUrl = "https://stage.meraas.com/en/api/appointments/slots?project="+projectName;
-        console.log(endPointUrl);
-        const response = await fetch(`https://stage.meraas.com/en/api/appointments/slots?project=${projectName}`);
-        const data = await response.json();
-        console.log(data);
+document.addEventListener("DOMContentLoaded", function () {
+  const projectNameInput = document.getElementById("project-name");
+  const projectName = projectNameInput.value;
+  document.getElementById("project-title").textContent = projectName;
 
-        const dateOptions = document.getElementById("date-options");
-        const slotOptions = document.getElementById("slot-options");
-        const slotMessage = document.getElementById("slot-message");
-        const summaryDateTime = document.getElementById("summary-datetime");
+  async function loadSlots() {
+    try {
+      const projectName = encodeURIComponent(projectNameInput.value);
+      const endPointUrl = `https://stage.meraas.com/en/api/appointments/slots?project=${projectName}`;
+      console.log("Loading slots from:", endPointUrl);
 
-        dateOptions.innerHTML = "";
+      const response = await fetch(endPointUrl, {
+        method: "GET",
+       
+      });
+      const data = await response.json();
+      console.log("Slots response:", data);
+
+      const dateOptions = document.getElementById("date-options");
+      const slotOptions = document.getElementById("slot-options");
+      const slotMessage = document.getElementById("slot-message");
+      const summaryDateTime = document.getElementById("summary-datetime");
+
+      // Clear previous UI
+      dateOptions.innerHTML = "";
+      slotOptions.innerHTML = "";
+      slotMessage.style.display = "none";
+      summaryDateTime.textContent = "Not selected";
+
+      let dates = Object.keys(data.dates || {});
+      if (dates.length === 0) {
+        dateOptions.innerHTML = "<p>No dates available</p>";
+        return;
+      }
+
+      // Pick first date with available slots, or fallback to first date
+      let defaultDate = dates.find(d => data.dates[d].available.length > 0) || dates[0];
+
+      // Render date radio buttons
+      dates.forEach((d, index) => {
+        const optionId = `date-${index}`;
+        dateOptions.insertAdjacentHTML("beforeend", `
+          <div class="option-item">
+            <input type="radio" id="${optionId}" name="date" value="${d}" ${d === defaultDate ? "checked" : ""}>
+            <label for="${optionId}">${d}</label>
+          </div>
+        `);
+      });
+
+      // Attach event listeners after rendering
+      dateOptions.querySelectorAll("input[name='date']").forEach(input => {
+        input.addEventListener("change", e => renderSlots(e.target.value));
+      });
+
+      // Initial slot rendering
+      renderSlots(defaultDate);
+
+      function renderSlots(selectedDate) {
         slotOptions.innerHTML = "";
+        const available = data.dates[selectedDate].available;
+
+        if (!available || available.length === 0) {
+          slotMessage.style.display = "block";
+          summaryDateTime.textContent = `${selectedDate} - All slots booked`;
+          return;
+        }
+
         slotMessage.style.display = "none";
 
-        let dates = Object.keys(data.dates);
-        let defaultDate = dates.find(d => data.dates[d].available.length > 0) || dates[0];
-
-        // Render date radio buttons
-        dates.forEach((d, index) => {
-          const optionId = `date-${index}`;
-          dateOptions.insertAdjacentHTML("beforeend", `
+        // Render available slots
+        available.forEach((s, i) => {
+          const slotId = `slot-${i}`;
+          slotOptions.insertAdjacentHTML("beforeend", `
             <div class="option-item">
-              <input type="radio" id="${optionId}" name="date" value="${d}" ${d === defaultDate ? "checked" : ""}>
-              <label for="${optionId}">${d}</label>
+              <input type="radio" id="${slotId}" name="slot" value="${s}" ${i===0 ? "checked" : ""}>
+              <label for="${slotId}">${s}</label>
             </div>
           `);
         });
 
-          renderSlots(defaultDate);
+        // Update summary with first slot
+        updateSummary(selectedDate, available[0]);
 
-          dateOptions.addEventListener("change", e => renderSlots(e.target.value));
-
-          function renderSlots(selectedDate) {
-            slotOptions.innerHTML = "";
-              const available = data.dates[selectedDate].available;
-
-              if (available.length === 0) {
-                slotMessage.style.display = "block";
-                summaryDateTime.textContent = `${selectedDate} - All slots booked`;
-                return;
-              }
-
-              slotMessage.style.display = "none";
-
-              // Only render available slots
-              available.forEach((s, i) => {
-                const slotId = `slot-${i}`;
-                slotOptions.insertAdjacentHTML("beforeend", `
-                  <div class="option-item">
-                    <input type="radio" id="${slotId}" name="slot" value="${s}" ${i===0 ? "checked" : ""}>
-                    <label for="${slotId}">${s}</label>
-                  </div>
-                `);
-              });
-
-              // Update summary with first available slot
-              updateSummary(selectedDate, available[0]);
-
-              slotOptions.querySelectorAll("input").forEach(input => {
-                input.addEventListener("change", e => updateSummary(selectedDate, e.target.value));
-              });
-          }
-
-          function updateSummary(date, slot) {
-            summaryDateTime.textContent = `${date} - ${slot}`;
-          }
-
-        } catch (error) {
-          console.error("Error fetching slots:", error);
-        }
+        // Add change listeners
+        slotOptions.querySelectorAll("input[name='slot']").forEach(input => {
+          input.addEventListener("change", e => updateSummary(selectedDate, e.target.value));
+        });
       }
 
+      function updateSummary(date, slot) {
+        summaryDateTime.textContent = `${date} - ${slot}`;
+      }
 
-      loadSlots();
+    } catch (error) {
+      console.error("Error fetching slots:", error);
+    }
+  }
 
-      document.getElementById("register-form").addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const form = e.target;
-        const formData = {
-          first_name: form.first_name.value,
-          last_name: form.last_name.value,
-          email: form.email.value,
-          phone: form.phone.value,
-          date: form.querySelector("input[name='date']:checked")?.value,
-          slot: form.querySelector("input[name='slot']:checked")?.value,
-          project_name: form["project-name"].value, // <- match DB column
-        };
-        console.log(formData);
+  // Initial load
+  loadSlots();
 
-        try {
-          const response = await fetch("https://stage.meraas.com/en/api/appointments/book", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
-          });
+  // Handle form submit
+  document.getElementById("register-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = {
+      first_name: form.first_name.value,
+      last_name: form.last_name.value,
+      email: form.email.value,
+      phone: form.phone.value,
+      date: form.querySelector("input[name='date']:checked")?.value,
+      slot: form.querySelector("input[name='slot']:checked")?.value,
+      project_name: form["project-name"].value,
+    };
+    console.log("Submitting:", formData);
 
-          const text = await response.text();  // <-- get raw text
-          console.log("Raw response:", text);
-
-          let result;
-          try {
-            result = JSON.parse(text);  // try parse JSON
-          } catch (err) {
-            console.error("Failed to parse JSON:", err);
-            alert("Server did not return valid JSON. Check console.");
-            return;
-          }
-
-          if (result.status === "success") {
-            let successModal = new bootstrap.Modal(document.getElementById("successPopup"));
-            successModal.show();
-
-            // Optional: reload entire page after 2 seconds
-            setTimeout(() => {
-              window.location.reload();
-            }, 6000);
-          } else {
-            alert(result.message || "Error submitting form");
-          }
-        } catch (err) {
-          console.error("Error submitting form:", err);
-          alert("Something went wrong. Please try again later.");
-        }
-
+    try {
+      const response = await fetch("https://stage.meraas.com/en/api/appointments/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
-    });
-  </script>
+
+      const text = await response.text();
+      console.log("Raw booking response:", text);
+
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (err) {
+        console.error("Failed to parse JSON:", err);
+        alert("Server did not return valid JSON. Check console.");
+        return;
+      }
+
+      if (result.status === "success") {
+        let successModal = new bootstrap.Modal(document.getElementById("successPopup"));
+        successModal.show();
+
+        // ✅ Reset form fields
+        form.reset();
+
+        // ✅ Reset summary section
+        document.getElementById("summary-datetime").textContent = "Not selected";
+
+        // ✅ Reload slots fresh
+        loadSlots();
+
+      } else {
+        alert(result.message || "Error submitting form");
+      }
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      alert("Something went wrong. Please try again later.");
+    }
+  });
+});
+</script>
+
 
 </body>
 </html>

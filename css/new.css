@@ -7,7 +7,8 @@ body {
 }
 
 .section_cta {
-  background-color: #280000;
+    padding-top: 50px;
+    background-color: #280000;
     opacity: 1;
     background-image: linear-gradient(#280000d6,#280000d6),url(https://cdn.prod.website-files.com/680a044466c287311a4266d1/680b5394f1004c07e0c9a171_Asset%2013%403x-80.avif);
     background-position: 0 0,50%;
