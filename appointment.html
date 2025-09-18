@@ -10,25 +10,34 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
   <style>
+    :root {
+      --primary-color: #0077cc;
+      --secondary-color: #005fa3;
+      --background-color: #280000;
+      --text-color: #ffcbb2;
+    }
 
    body {
-  background-color: #280000;
-    font-family: "Avenir 2", Verdana, sans-serif;;
-    color: #ffcbb2;
-    font-size: 1rem;
-    line-height: 1.5;
-}
+      background-color: var(--background-color);
+      font-family: "Avenir 2", Verdana, sans-serif;
+      color: var(--text-color);
+      font-size: 1rem;
+      line-height: 1.5;
+      height: 100vh;
+    }
 
-.section_cta {
-  padding-top: 50px;
-  background-color: #280000;
-    opacity: 1;
-    background-image: linear-gradient(#280000d6,#280000d6),url(https://cdn.prod.website-files.com/680a044466c287311a4266d1/680b5394f1004c07e0c9a171_Asset%2013%403x-80.avif);
-    background-position: 0 0,50%;
-    background-repeat: repeat,no-repeat;
-    background-size: auto,cover;
-    position: relative
-}
+    .section_cta {
+      padding-top: 50px;
+      opacity: 1;
+      background-position: 0 0, 50%;
+      background-repeat: repeat, no-repeat;
+      background-size: auto, cover;
+      position: relative;
+      height: 100%;
+      min-height: 100vh;
+      background-position: center;
+      background-size: cover;
+    }
 
 .container-large-4 {
   max-width: 800px;
@@ -87,19 +96,19 @@
   font-size: 15px;
   cursor: pointer;
   transition: all 0.2s;
-  background: #fff;
+  background: var(--secondary-color);
 }
 
 .option-item input[type="radio"]:checked + label {
-  background: #0077cc;
-  color: #fff;
-  border-color: #0077cc;
+   background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--text-color);
 }
 
 .w-button {
   padding: 12px 20px;
-  background-color: #0077cc;
-  color: #fff;
+   background-color: var(--primary-color);
+  color: var(--text-color);
   border: none;
   border-radius: 4px;
   font-size: 16px;
@@ -107,7 +116,7 @@
 }
 
 .w-button:hover {
-  background-color: #005fa3;
+   background-color: var(--secondary-color);
 }
 
 #success_message,
@@ -163,6 +172,7 @@
     font-size: 14px
 }
 
+
 .text-field:focus-visible,.text-field[data-wf-focus-visible] {
     border-bottom-color: #7da8b2
 }
@@ -172,6 +182,30 @@
     font-size: 14px;
     font-weight: 300
 }
+
+/* Remove focus border + shadow completely */
+.text-field:focus,
+.text-field:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: inherit !important; /* keep same border as normal */
+}
+
+/* Remove yellow/blue background from Chrome autofill */
+.text-field:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px #280000 inset !important; /* match your form bg */
+  box-shadow: 0 0 0px 1000px #280000 inset !important;
+  -webkit-text-fill-color: #fff !important; /* match text color */
+  caret-color: #fff !important;             /* cursor stays visible */
+}
+
+/* Keep autofill consistent on hover/focus too */
+.text-field:-webkit-autofill:focus,
+.text-field:-webkit-autofill:hover {
+  -webkit-box-shadow: 0 0 0px 1000px #280000 inset !important;
+  box-shadow: 0 0 0px 1000px #280000 inset !important;
+}
+
 
 .form-2 .field_div.full-width {
   grid-column: 1 / -1;       /* span across both columns */
@@ -301,13 +335,59 @@ document.addEventListener("DOMContentLoaded", function () {
       const endPointUrl = `https://stage.meraas.com/en/api/appointments/slots?project=${projectName}`;
       console.log("Loading slots from:", endPointUrl);
 
-      const response = await fetch(endPointUrl, {
+      const response = await fetch(endPointUrl + "&_ts=" + Date.now(), {
         method: "GET",
-       
       });
       const data = await response.json();
       console.log("Slots response:", data);
 
+      // === Apply API styles dynamically ===
+      if (data.font) {
+        document.body.style.fontFamily = data.font;
+      }
+      if (data.primary_color) {
+        document.documentElement.style.setProperty("--primary-color", data.primary_color);
+      }
+      if (data.secondary_color) {
+        document.documentElement.style.setProperty("--secondary-color", data.secondary_color);
+      }
+      if (data.background_color) {
+        document.documentElement.style.setProperty("--background-color", data.background_color);
+      }
+      if (data.text_color) {
+        document.documentElement.style.setProperty("--text-color", data.text_color);
+      }
+
+      const section = document.querySelector(".section_cta");
+
+      function hexToRgba(hex, alpha = 0.7) {
+        let r = 0, g = 0, b = 0;
+
+        // Expand shorthand #abc → #aabbcc
+        if (hex.length === 4) {
+          hex = "#" + [...hex.slice(1)].map(x => x + x).join("");
+        }
+
+        if (hex.length === 7) {
+          r = parseInt(hex.slice(1, 3), 16);
+          g = parseInt(hex.slice(3, 5), 16);
+          b = parseInt(hex.slice(5, 7), 16);
+        }
+
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+      const bgColor = data.background_color || "#280000";
+      const secondaryColor = data.secondary_color || bgColor;
+
+      if (data.background_image) {
+        section.style.backgroundImage =
+          `linear-gradient(${hexToRgba(bgColor)}, ${hexToRgba(secondaryColor)}), url(${data.background_image})`;
+        section.style.backgroundSize = "cover";
+        section.style.backgroundPosition = "center";
+      } else {
+        section.style.backgroundImage =
+          `linear-gradient(${hexToRgba(bgColor)}, ${hexToRgba(secondaryColor)})`;
+      }
       const dateOptions = document.getElementById("date-options");
       const slotOptions = document.getElementById("slot-options");
       const slotMessage = document.getElementById("slot-message");
@@ -429,13 +509,10 @@ document.addEventListener("DOMContentLoaded", function () {
         let successModal = new bootstrap.Modal(document.getElementById("successPopup"));
         successModal.show();
 
-        // ✅ Reset form fields
         form.reset();
 
-        // ✅ Reset summary section
         document.getElementById("summary-datetime").textContent = "Not selected";
 
-        // ✅ Reload slots fresh
         loadSlots();
 
       } else {
@@ -448,6 +525,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 </script>
+
 
 
 </body>
